@@ -434,26 +434,33 @@ def grafico_mapa_calor_comuna(df):
     meses_orden = ['MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
     pivot = pivot.reindex(columns=[m for m in meses_orden if m in pivot.columns])
     
-    # Crear figura con go.Heatmap en lugar de px.imshow para mejor control
+    # Si después de reindexar no hay columnas, retornar None
+    if pivot.empty or len(pivot.columns) == 0:
+        return None
+    
+    # Crear figura con go.Heatmap
     fig = go.Figure(data=go.Heatmap(
         z=pivot.values,
-        x=pivot.columns,
-        y=pivot.index,
+        x=list(pivot.columns),
+        y=list(pivot.index),
         colorscale=[[0, '#111111'], [0.5, '#2E59A7'], [1, '#F1C40F']],
         showscale=True,
         text=pivot.values,
         texttemplate="%{text}",
         textfont={"size": 10, "color": "white"},
-        hovertemplate='<b>%{y}</b><br>Mes: %{x}<br>Visitas: %{z}<extra></extra>',
+        hovertemplate='<b>%{y}</b><br>Mes: %{x}<br>Visitas: %{z}<extra></extra>'
+    ))
+    
+    # Configurar colorbar por separado para mayor compatibilidad
+    fig.update_traces(
         colorbar=dict(
-            title="Visitas",
-            titlefont=dict(color='#FAFAFA'),
+            title=dict(text="Visitas", font=dict(color='#FAFAFA')),
             tickfont=dict(color='#FAFAFA'),
             bgcolor='rgba(17,17,17,0.8)',
             bordercolor='#2E59A7',
             borderwidth=1
         )
-    ))
+    )
     
     fig.update_layout(
         title=dict(
