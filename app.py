@@ -18,7 +18,59 @@ st.markdown("""
     h1 { color: #2E59A7 !important; font-weight: bold !important; }
     h2, h3 { color: #F1C40F !important; font-weight: bold !important; }
     div[data-testid="stMetric"] { background-color: #111111; border: 1px solid #2E59A7; border-radius: 10px; padding: 15px; }
-    .footer-style { position: fixed; left: 0; bottom: 0; width: 100%; background-color: #111111; color: #FAFAFA; text-align: center; padding: 10px; border-top: 2px solid #2E59A7; font-size: 12px; z-index: 999; }
+    
+    /* Footer mejorado */
+    .footer-container {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background: linear-gradient(90deg, #111111 0%, #1a1a1a 100%);
+        color: #FAFAFA;
+        border-top: 3px solid #2E59A7;
+        z-index: 999;
+        padding: 15px 0;
+        box-shadow: 0 -4px 20px rgba(46, 89, 167, 0.3);
+    }
+    .footer-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 40px;
+    }
+    .footer-info {
+        font-size: 13px;
+        line-height: 1.6;
+    }
+    .footer-info .nombre {
+        color: #F1C40F;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    .footer-info .cargo {
+        color: #2E59A7;
+        font-weight: bold;
+    }
+    .footer-info a {
+        color: #F1C40F;
+        text-decoration: none;
+    }
+    .footer-info a:hover {
+        text-decoration: underline;
+    }
+    .footer-perfil {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3px solid #2E59A7;
+        object-fit: cover;
+        box-shadow: 0 0 15px rgba(241, 196, 15, 0.3);
+    }
+    .main-content {
+        padding-bottom: 120px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -26,15 +78,19 @@ st.markdown("""
 # 2. SEGURIDAD
 # ============================================================================
 def safe_image(file_path, width=200):
-    if os.path.exists(file_path): st.image(file_path, width=width)
-    else: st.caption(f"[{file_path} no cargado]")
+    if os.path.exists(file_path): 
+        st.image(file_path, width=width)
+        return True
+    else: 
+        st.caption(f"[{file_path} no cargado]")
+        return False
 
 def check_password():
     if "password_correct" not in st.session_state: st.session_state["password_correct"] = False
     if not st.session_state["password_correct"]:
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            safe_image("logo.png", width=200)
+            safe_image("logo.png", width=280)
             st.title("Acceso Inteligencia Carmencita")
             pwd = st.text_input("Clave de Seguridad", type="password")
             if st.button("Ingresar"):
@@ -410,10 +466,62 @@ def grafico_mapa_calor_comuna(df):
     return fig
 
 # ============================================================================
-# 5. DASHBOARD
+# 5. COMPONENTES UI
+# ============================================================================
+def render_logo():
+    """Renderiza el logo grande en la parte superior"""
+    col1, col2, col3 = st.columns([1, 3, 1])
+    with col2:
+        if os.path.exists("logo.png"):
+            st.image("logo.png", width=400, use_container_width=True)
+        else:
+            st.markdown("""
+                <div style="text-align: center; padding: 20px; border: 2px dashed #2E59A7; border-radius: 10px; margin: 20px 0;">
+                    <h2 style="color: #2E59A7; margin: 0;">🐝 CARMENCITA</h2>
+                    <p style="color: #F1C40F; margin: 5px 0 0 0;">Sistema de Seguimiento Operativo</p>
+                </div>
+            """, unsafe_allow_html=True)
+
+def render_footer():
+    """Renderiza el footer con información de contacto y foto de perfil"""
+    # Verificar si existe la imagen de perfil
+    perfil_html = ""
+    if os.path.exists("perfil.jpg"):
+        import base64
+        with open("perfil.jpg", "rb") as f:
+            img_bytes = f.read()
+            img_b64 = base64.b64encode(img_bytes).decode()
+        perfil_html = f'<img src="data:image/jpeg;base64,{img_b64}" class="footer-perfil" alt="Perfil">'
+    else:
+        perfil_html = '<div style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #2E59A7; background: #2E59A7; display: flex; align-items: center; justify-content: center; font-size: 30px;">👤</div>'
+    
+    footer_html = f"""
+    <div class="footer-container">
+        <div class="footer-content">
+            <div class="footer-info">
+                <span class="nombre">CLAUDIO RUIZ O.</span> | <span class="cargo">Gerente Regional Sur</span> | CARMENCITA export<br>
+                Ingeniero Comercial / MBA / Diplomado en Estrategia UC<br>
+                <b>T:</b> <a href="tel:+56752323539">+56 75 232 3539</a> | <b>Móvil:</b> <a href="tel:+56996091936">+56 9 9609 1936</a><br>
+                <b>E:</b> <a href="mailto:claudioruiz@carmencita.cl">claudioruiz@carmencita.cl</a><br>
+                <b>Website:</b> <a href="https://www.carmencita.cl" target="_blank">www.carmencita.cl</a>
+            </div>
+            <div>
+                {perfil_html}
+            </div>
+        </div>
+    </div>
+    """
+    st.markdown(footer_html, unsafe_allow_html=True)
+
+# ============================================================================
+# 6. DASHBOARD
 # ============================================================================
 def main():
     if not check_password(): return
+    
+    # Logo grande en la parte superior
+    render_logo()
+    
     df = load_data()
     
     with st.sidebar:
@@ -509,7 +617,8 @@ def main():
     else:
         st.info(f"No hay actividad registrada para los filtros seleccionados.")
 
-    st.markdown('<div class="footer-style"><b>Claudio Ruiz O.</b> | Senior Developer | © 2026 Carmencita</div>', unsafe_allow_html=True)
+    # Renderizar footer al final
+    render_footer()
 
 if __name__ == "__main__":
     main()
