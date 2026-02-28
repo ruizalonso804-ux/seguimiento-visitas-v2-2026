@@ -19,35 +19,33 @@ st.markdown("""
     h2, h3 { color: #F1C40F !important; font-weight: bold !important; }
     div[data-testid="stMetric"] { background-color: #111111; border: 1px solid #2E59A7; border-radius: 10px; padding: 15px; }
     
-    /* Footer mejorado */
+    /* Footer al final de página (no fijo) */
     .footer-container {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
         background: linear-gradient(90deg, #111111 0%, #1a1a1a 100%);
         color: #FAFAFA;
         border-top: 3px solid #2E59A7;
-        z-index: 999;
-        padding: 15px 0;
+        padding: 30px 0;
+        margin-top: 50px;
         box-shadow: 0 -4px 20px rgba(46, 89, 167, 0.3);
     }
     .footer-content {
         max-width: 1200px;
         margin: 0 auto;
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
+        gap: 40px;
         padding: 0 40px;
     }
     .footer-info {
-        font-size: 13px;
-        line-height: 1.6;
+        font-size: 14px;
+        line-height: 1.8;
+        text-align: left;
     }
     .footer-info .nombre {
         color: #F1C40F;
         font-weight: bold;
-        font-size: 14px;
+        font-size: 16px;
     }
     .footer-info .cargo {
         color: #2E59A7;
@@ -61,15 +59,12 @@ st.markdown("""
         text-decoration: underline;
     }
     .footer-perfil {
-        width: 80px;
-        height: 80px;
+        width: 100px;
+        height: 100px;
         border-radius: 50%;
         border: 3px solid #2E59A7;
         object-fit: cover;
-        box-shadow: 0 0 15px rgba(241, 196, 15, 0.3);
-    }
-    .main-content {
-        padding-bottom: 120px;
+        box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -420,7 +415,7 @@ def grafico_top_asesores(df):
 
 def grafico_mapa_calor_comuna(df):
     """Heatmap de actividad por Comuna y Mes"""
-    if df.empty or sel_mes != "AÑO COMPLETO":
+    if df.empty:
         return None
     
     pivot = df.pivot_table(
@@ -431,35 +426,53 @@ def grafico_mapa_calor_comuna(df):
         fill_value=0
     )
     
+    # Si no hay datos, retornar None
+    if pivot.empty:
+        return None
+    
     # Ordenar meses correctamente
     meses_orden = ['MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
     pivot = pivot.reindex(columns=[m for m in meses_orden if m in pivot.columns])
     
-    fig = px.imshow(
-        pivot,
-        labels=dict(x="Mes", y="Comuna", color="Visitas Realizadas"),
-        color_continuous_scale=['#111111', '#2E59A7', '#F1C40F'],
-        aspect='auto'
-    )
-    
-    fig.update_traces(
-        hovertemplate='<b>%{y}</b><br>Mes: %{x}<br>Visitas: %{z}<extra></extra>',
+    # Crear figura con go.Heatmap en lugar de px.imshow para mejor control
+    fig = go.Figure(data=go.Heatmap(
+        z=pivot.values,
+        x=pivot.columns,
+        y=pivot.index,
+        colorscale=[[0, '#111111'], [0.5, '#2E59A7'], [1, '#F1C40F']],
+        showscale=True,
         text=pivot.values,
-        texttemplate="%{z}",
-        textfont=dict(size=10, color='#FAFAFA')
-    )
+        texttemplate="%{text}",
+        textfont={"size": 10, "color": "white"},
+        hovertemplate='<b>%{y}</b><br>Mes: %{x}<br>Visitas: %{z}<extra></extra>',
+        colorbar=dict(
+            title="Visitas",
+            titlefont=dict(color='#FAFAFA'),
+            tickfont=dict(color='#FAFAFA'),
+            bgcolor='rgba(17,17,17,0.8)',
+            bordercolor='#2E59A7',
+            borderwidth=1
+        )
+    ))
     
-    tema = crear_tema_plotly()
     fig.update_layout(
-        **tema,
-        title="Mapa de Calor: Visitas por Comuna y Mes",
+        title=dict(
+            text="Mapa de Calor: Visitas por Comuna y Mes",
+            font=dict(color='#F1C40F', size=16)
+        ),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(17,17,17,1)',
+        font=dict(color='#FAFAFA', family='Arial, sans-serif'),
         height=500,
         margin=dict(l=20, r=20, t=50, b=20),
-        xaxis=dict(side='bottom'),
-        coloraxis_colorbar=dict(
-            title="Visitas",
-            tickfont=dict(color='#FAFAFA'),
-            titlefont=dict(color='#FAFAFA')
+        xaxis=dict(
+            side='bottom',
+            gridcolor='rgba(46, 89, 167, 0.2)',
+            tickfont=dict(color='#FAFAFA')
+        ),
+        yaxis=dict(
+            gridcolor='rgba(46, 89, 167, 0.2)',
+            tickfont=dict(color='#FAFAFA')
         )
     )
     
@@ -483,7 +496,7 @@ def render_logo():
             """, unsafe_allow_html=True)
 
 def render_footer():
-    """Renderiza el footer con información de contacto y foto de perfil"""
+    """Renderiza el footer con información de contacto y foto de perfil al final de la página"""
     # Verificar si existe la imagen de perfil
     perfil_html = ""
     if os.path.exists("perfil.jpg"):
@@ -493,7 +506,7 @@ def render_footer():
             img_b64 = base64.b64encode(img_bytes).decode()
         perfil_html = f'<img src="data:image/jpeg;base64,{img_b64}" class="footer-perfil" alt="Perfil">'
     else:
-        perfil_html = '<div style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #2E59A7; background: #2E59A7; display: flex; align-items: center; justify-content: center; font-size: 30px;">👤</div>'
+        perfil_html = '<div style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid #2E59A7; background: #2E59A7; display: flex; align-items: center; justify-content: center; font-size: 40px;">👤</div>'
     
     footer_html = f"""
     <div class="footer-container">
@@ -525,7 +538,8 @@ def main():
     df = load_data()
     
     with st.sidebar:
-        safe_image("perfil.jpg", width=120)
+        # Eliminada la foto de perfil de la barra lateral
+        st.markdown("---")
         if st.button("🔄 Sincronizar Datos"):
             st.cache_data.clear()
             st.rerun()
@@ -590,7 +604,7 @@ def main():
             if fig_asesores:
                 st.plotly_chart(fig_asesores, use_container_width=True, key="asesores_chart")
         
-        # Fila 3: Mapa de calor (solo si es año completo y hay datos)
+        # Fila 3: Mapa de calor (solo si es año completo y no hay filtro de comuna específico)
         if sel_mes == "AÑO COMPLETO" and not sel_comuna:
             fig_heatmap = grafico_mapa_calor_comuna(df_f)
             if fig_heatmap:
@@ -617,7 +631,7 @@ def main():
     else:
         st.info(f"No hay actividad registrada para los filtros seleccionados.")
 
-    # Renderizar footer al final
+    # Renderizar footer al final de todo (no fijo)
     render_footer()
 
 if __name__ == "__main__":
