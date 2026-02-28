@@ -320,14 +320,24 @@ def grafico_top_asesores(df):
     asesores['CUMPLIMIENTO %'] = (asesores['REAL'] / asesores['META'] * 100).fillna(0).round(1)
     asesores = asesores.sort_values('CUMPLIMIENTO %', ascending=False).head(10)
     
+    # Crear color basado en cumplimiento (verde > amarillo > rojo)
+    def get_color(pct):
+        if pct >= 80:
+            return '#1b5e20'  # Verde oscuro
+        elif pct >= 50:
+            return '#f57f17'  # Naranja/Amarillo
+        else:
+            return '#b71c1c'  # Rojo
+    
+    asesores['COLOR'] = asesores['CUMPLIMIENTO %'].apply(get_color)
+    
     fig = go.Figure()
     
     fig.add_trace(go.Bar(
         x=asesores['ASESOR'],
         y=asesores['CUMPLIMIENTO %'],
         marker=dict(
-            color=asesores['CUMPLIMIENTO %'],
-            colorscale=[[0, '#b71c1c'], [50, '#f57f17'], [100, '#1b5e20']],
+            color=asesores['COLOR'],  # Colores individuales por barra
             line=dict(color='#2E59A7', width=1)
         ),
         text=asesores['CUMPLIMIENTO %'].astype(str) + '%',
