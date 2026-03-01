@@ -13,49 +13,31 @@ st.set_page_config(
     page_title="Seguimiento Operativo | Carmencita", 
     page_icon="🐝", 
     layout="wide",
-    initial_sidebar_state="collapsed"  # Colapsar sidebar en móvil por defecto
+    initial_sidebar_state="collapsed"
 )
 
 # CSS Responsive Mejorado
 st.markdown("""
     <style>
-    /* Reset y base responsive */
-    * {
-        box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     
-    .stApp { 
-        background-color: #000000; 
-        color: #FAFAFA; 
-    }
+    .stApp { background-color: #000000; color: #FAFAFA; }
     
     [data-testid="stSidebar"] { 
         background-color: #111111 !important; 
         border-right: 1px solid #2E59A7; 
-        width: 100% !important;
     }
     
-    @media (min-width: 768px) {
-        [data-testid="stSidebar"] {
-            min-width: 300px !important;
-            max-width: 400px !important;
-        }
-    }
-    
-    /* Tipografía responsive */
     h1 { 
         color: #2E59A7 !important; 
         font-weight: bold !important;
         font-size: clamp(1.5rem, 5vw, 2.5rem) !important;
-        line-height: 1.2 !important;
-        margin-bottom: 0.5rem !important;
     }
     
     h2 { 
         color: #F1C40F !important; 
         font-weight: bold !important;
         font-size: clamp(1.2rem, 4vw, 1.8rem) !important;
-        line-height: 1.3 !important;
     }
     
     h3 { 
@@ -64,32 +46,19 @@ st.markdown("""
         font-size: clamp(1rem, 3.5vw, 1.4rem) !important;
     }
     
-    /* Métricas responsive */
     div[data-testid="stMetric"] { 
         background-color: #111111; 
         border: 1px solid #2E59A7; 
         border-radius: 10px; 
         padding: 10px;
-        min-width: 0;
-    }
-    
-    div[data-testid="stMetric"] > div {
-        width: 100%;
     }
     
     @media (max-width: 640px) {
-        div[data-testid="stMetric"] {
-            padding: 8px;
-        }
-        div[data-testid="stMetric"] label {
-            font-size: 0.75rem !important;
-        }
-        div[data-testid="stMetric"] div[data-testid="stMetricValue"] {
-            font-size: 1.2rem !important;
-        }
+        div[data-testid="stMetric"] { padding: 8px; }
+        div[data-testid="stMetric"] label { font-size: 0.75rem !important; }
+        div[data-testid="stMetric"] div[data-testid="stMetricValue"] { font-size: 1.2rem !important; }
     }
     
-    /* Botones responsive */
     .stButton > button {
         width: 100%;
         background-color: #2E59A7;
@@ -98,7 +67,6 @@ st.markdown("""
         padding: 12px;
         border-radius: 8px;
         font-weight: bold;
-        transition: all 0.3s;
     }
     
     .stButton > button:hover {
@@ -106,23 +74,6 @@ st.markdown("""
         color: #000;
     }
     
-    /* Tablas responsive */
-    .stDataFrame {
-        font-size: 0.85rem;
-    }
-    
-    @media (max-width: 640px) {
-        .stDataFrame {
-            font-size: 0.75rem;
-        }
-    }
-    
-    /* Selectbox y multiselect responsive */
-    .stSelectbox, .stMultiselect {
-        width: 100%;
-    }
-    
-    /* Logo responsive */
     .logo-container {
         width: 100%;
         max-width: 400px;
@@ -131,19 +82,15 @@ st.markdown("""
     }
     
     @media (max-width: 480px) {
-        .logo-container {
-            max-width: 250px;
-        }
+        .logo-container { max-width: 250px; }
     }
     
-    /* Footer responsive */
     .footer-container {
         background: linear-gradient(90deg, #111111 0%, #1a1a1a 100%);
         color: #FAFAFA;
         border-top: 3px solid #2E59A7;
         padding: 20px 15px;
         margin-top: 30px;
-        box-shadow: 0 -4px 20px rgba(46, 89, 167, 0.3);
     }
     
     .footer-content {
@@ -162,14 +109,12 @@ st.markdown("""
             justify-content: center;
             text-align: left;
             gap: 30px;
-            padding: 0 20px;
         }
     }
     
     .footer-info {
         font-size: clamp(0.75rem, 2.5vw, 0.9rem);
         line-height: 1.6;
-        word-break: break-word;
     }
     
     .footer-info .nombre {
@@ -178,20 +123,9 @@ st.markdown("""
         font-size: clamp(0.9rem, 3vw, 1.1rem);
     }
     
-    .footer-info .cargo {
-        color: #2E59A7;
-        font-weight: bold;
-    }
-    
-    .footer-info a {
-        color: #F1C40F;
-        text-decoration: none;
-        word-break: break-all;
-    }
-    
-    .footer-info a:hover {
-        text-decoration: underline;
-    }
+    .footer-info .cargo { color: #2E59A7; font-weight: bold; }
+    .footer-info a { color: #F1C40F; text-decoration: none; }
+    .footer-info a:hover { text-decoration: underline; }
     
     .footer-perfil {
         width: 80px;
@@ -199,26 +133,15 @@ st.markdown("""
         border-radius: 50%;
         border: 3px solid #2E59A7;
         object-fit: cover;
-        box-shadow: 0 0 15px rgba(241, 196, 15, 0.3);
     }
     
     @media (min-width: 640px) {
-        .footer-perfil {
-            width: 100px;
-            height: 100px;
-        }
+        .footer-perfil { width: 100px; height: 100px; }
     }
     
-    /* Contenedor de gráficos responsive */
-    .plotly-chart {
-        width: 100% !important;
-    }
-    
-    /* Espaciado responsive */
     .block-container {
         padding-left: 1rem !important;
         padding-right: 1rem !important;
-        padding-top: 1rem !important;
     }
     
     @media (min-width: 768px) {
@@ -228,12 +151,6 @@ st.markdown("""
         }
     }
     
-    /* Scroll horizontal para tablas en móvil */
-    .stDataFrame > div {
-        overflow-x: auto;
-    }
-    
-    /* Ajuste de columnas en móvil */
     @media (max-width: 640px) {
         [data-testid="column"] {
             width: 100% !important;
@@ -245,7 +162,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================================================
-# 2. SEGURIDAD (OPTIMIZADA MÓVIL)
+# 2. SEGURIDAD
 # ============================================================================
 def safe_image(file_path, width=200):
     if os.path.exists(file_path): 
@@ -259,19 +176,13 @@ def check_password():
     if "password_correct" not in st.session_state: 
         st.session_state["password_correct"] = False
     if not st.session_state["password_correct"]:
-        # Layout más compacto para móvil
         col1, col2, col3 = st.columns([1, 6, 1])
         with col2:
             st.markdown('<div class="logo-container">', unsafe_allow_html=True)
             safe_image("logo.png", width=280)
             st.markdown('</div>', unsafe_allow_html=True)
-            
             st.markdown("<h1 style='text-align: center; font-size: 1.5rem;'>Acceso Inteligencia Carmencita</h1>", unsafe_allow_html=True)
-            
-            # Input más grande para táctil
-            pwd = st.text_input("Clave de Seguridad", type="password", 
-                               placeholder="Ingrese contraseña")
-            
+            pwd = st.text_input("Clave de Seguridad", type="password", placeholder="Ingrese contraseña")
             if st.button("Ingresar", use_container_width=True):
                 if pwd == st.secrets.get("APP_PASSWORD", "Felicidad2011"):
                     st.session_state["password_correct"] = True
@@ -282,7 +193,7 @@ def check_password():
     return True
 
 # ============================================================================
-# 3. MOTOR DE DATOS (FILTRADO DE FILAS VACÍAS)
+# 3. MOTOR DE DATOS
 # ============================================================================
 def normalize_text(text):
     if pd.isna(text) or text == "": 
@@ -388,21 +299,16 @@ def load_data():
         return pd.DataFrame()
 
 # ============================================================================
-# 4. FUNCIONES DE VISUALIZACIÓN (OPTIMIZADAS MÓVIL)
+# 4. FUNCIONES DE VISUALIZACIÓN (CORREGIDAS)
 # ============================================================================
 def crear_tema_plotly():
+    """Configuración visual oscura base para gráficos Plotly"""
     return dict(
         template="plotly_dark",
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(17,17,17,1)',
         font=dict(color='#FAFAFA', family='Arial, sans-serif', size=10),
         title_font=dict(color='#F1C40F', size=14),
-        legend=dict(
-            bgcolor='rgba(17,17,17,0.8)', 
-            bordercolor='#2E59A7', 
-            borderwidth=1,
-            font=dict(size=9)
-        ),
         margin=dict(l=10, r=10, t=40, b=10)
     )
 
@@ -449,6 +355,12 @@ def grafico_cumplimiento_por_programa(df):
         yaxis_title="",
         barmode='overlay',
         height=350,
+        legend=dict(
+            bgcolor='rgba(17,17,17,0.8)', 
+            bordercolor='#2E59A7', 
+            borderwidth=1,
+            font=dict(size=9)
+        ),
         xaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', zerolinecolor='#2E59A7', tickfont=dict(size=9)),
         yaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', zerolinecolor='#2E59A7', tickfont=dict(size=9))
     )
@@ -499,6 +411,12 @@ def grafico_evolucion_mensual(df):
         xaxis_title="Mes",
         yaxis_title="Visitas",
         height=350,
+        legend=dict(
+            bgcolor='rgba(17,17,17,0.8)', 
+            bordercolor='#2E59A7', 
+            borderwidth=1,
+            font=dict(size=9)
+        ),
         xaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', zerolinecolor='#2E59A7', tickfont=dict(size=9)),
         yaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', zerolinecolor='#2E59A7', tickfont=dict(size=9)),
         hovermode='x unified'
@@ -507,6 +425,7 @@ def grafico_evolucion_mensual(df):
     return fig
 
 def grafico_distribucion_estados(df):
+    """Gráfico circular: Distribución de estados (CORREGIDO)"""
     if df.empty:
         return None
     
@@ -534,13 +453,22 @@ def grafico_distribucion_estados(df):
         x=0.5, y=0.5
     )
     
-    tema = crear_tema_plotly()
+    # CORRECCIÓN: No usar **tema aquí, definir layout manualmente para evitar conflicto con legend
     fig.update_layout(
-        **tema,
-        title=dict(text="Distribución Estados", font=dict(size=14)),
+        template="plotly_dark",
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(17,17,17,1)',
+        font=dict(color='#FAFAFA', family='Arial, sans-serif', size=10),
+        title=dict(text="Distribución Estados", font=dict(size=14, color='#F1C40F')),
         height=350,
+        margin=dict(l=10, r=10, t=40, b=10),
         showlegend=True,
-        legend=dict(font=dict(size=9))
+        legend=dict(
+            bgcolor='rgba(17,17,17,0.8)', 
+            bordercolor='#2E59A7', 
+            borderwidth=1,
+            font=dict(size=9)
+        )
     )
     
     return fig
@@ -569,10 +497,7 @@ def grafico_top_asesores(df):
     fig.add_trace(go.Bar(
         x=asesores['ASESOR'],
         y=asesores['CUMPLIMIENTO %'],
-        marker=dict(
-            color=asesores['COLOR'],
-            line=dict(color='#2E59A7', width=1)
-        ),
+        marker=dict(color=asesores['COLOR'], line=dict(color='#2E59A7', width=1)),
         text=asesores['CUMPLIMIENTO %'].astype(str) + '%',
         textposition='outside',
         textfont=dict(color='#FAFAFA', size=9),
@@ -587,9 +512,9 @@ def grafico_top_asesores(df):
         xaxis_title="",
         yaxis_title="% Cumplimiento",
         height=350,
+        showlegend=False,
         xaxis=dict(tickangle=-45, tickfont=dict(size=8), gridcolor='rgba(46, 89, 167, 0.2)'),
-        yaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', range=[0, 110], tickfont=dict(size=9)),
-        showlegend=False
+        yaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', range=[0, 110], tickfont=dict(size=9))
     )
     
     return fig
@@ -598,13 +523,7 @@ def grafico_mapa_calor_comuna(df):
     if df.empty:
         return None
     
-    pivot = df.pivot_table(
-        values='REAL',
-        index='COMUNA',
-        columns='MES',
-        aggfunc='sum',
-        fill_value=0
-    )
+    pivot = df.pivot_table(values='REAL', index='COMUNA', columns='MES', aggfunc='sum', fill_value=0)
     
     if pivot.empty:
         return None
@@ -653,7 +572,7 @@ def grafico_mapa_calor_comuna(df):
     return fig
 
 # ============================================================================
-# 5. COMPONENTES UI (OPTIMIZADOS MÓVIL)
+# 5. COMPONENTES UI
 # ============================================================================
 def render_logo():
     col1, col2, col3 = st.columns([1, 6, 1])
@@ -691,26 +610,22 @@ def render_footer():
                 <b>E:</b> <a href="mailto:claudioruiz@carmencita.cl">claudioruiz@carmencita.cl</a><br>
                 <b>Web:</b> <a href="https://www.carmencita.cl" target="_blank">carmencita.cl</a>
             </div>
-            <div>
-                {perfil_html}
-            </div>
+            <div>{perfil_html}</div>
         </div>
     </div>
     """
     st.markdown(footer_html, unsafe_allow_html=True)
 
 # ============================================================================
-# 6. DASHBOARD (RESPONSIVE)
+# 6. DASHBOARD
 # ============================================================================
 def main():
     if not check_password(): 
         return
     
     render_logo()
-    
     df = load_data()
     
-    # Sidebar optimizado para móvil
     with st.sidebar:
         st.markdown("---")
         if st.button("🔄 Sincronizar", use_container_width=True):
@@ -718,16 +633,9 @@ def main():
             st.rerun()
         
         st.header("Filtros")
-        
-        # Selector de mes más compacto
-        sel_mes = st.selectbox(
-            "Mes", 
-            ["AÑO COMPLETO", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"],
-            index=0
-        )
+        sel_mes = st.selectbox("Mes", ["AÑO COMPLETO", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"])
         
         if not df.empty:
-            # Usar expanders en móvil para ahorrar espacio
             with st.expander("Filtros Avanzados", expanded=False):
                 sel_comuna = st.multiselect("Comuna", sorted(df['COMUNA'].unique()), max_selections=3)
                 sel_prog = st.multiselect("Asesoría", sorted(df['ASESORÍA'].unique()), max_selections=3)
@@ -735,11 +643,10 @@ def main():
         else:
             sel_comuna, sel_prog, sel_ase = [], [], []
 
-    # Filtros Dinámicos
+    # Filtros
     df_f = df.copy()
     if sel_mes != "AÑO COMPLETO":
         df_f = df_f[df_f['MES'] == sel_mes]
-    
     if sel_comuna: 
         df_f = df_f[df_f['COMUNA'].isin(sel_comuna)]
     if sel_prog: 
@@ -749,7 +656,7 @@ def main():
 
     st.title("📊 Seguimiento Operativo 2026")
     
-    # KPIs - 2x2 grid en móvil, 4 columnas en desktop
+    # KPIs
     c1, c2, c3, c4 = st.columns(4)
     m_t, r_t = df_f['META'].sum(), df_f['REAL'].sum()
     
@@ -762,46 +669,37 @@ def main():
     with c4:
         st.metric("USUARIOS", df_f['RUT'].nunique())
 
-    # Gráficos - apilados en móvil, 2 columnas en desktop
+    # Gráficos
     if not df_f.empty:
         st.markdown("---")
         st.subheader("📈 Análisis Visual")
         
-        # Primera fila de gráficos
         col_graf1, col_graf2 = st.columns(2)
-        
         with col_graf1:
             fig_prog = grafico_cumplimiento_por_programa(df_f)
             if fig_prog:
-                st.plotly_chart(fig_prog, use_container_width=True, config={'displayModeBar': False})
-        
+                st.plotly_chart(fig_prog, use_container_width=True, config={'displayModeBar': False}, key="prog_chart")
         with col_graf2:
             fig_evo = grafico_evolucion_mensual(df_f)
             if fig_evo:
-                st.plotly_chart(fig_evo, use_container_width=True, config={'displayModeBar': False})
+                st.plotly_chart(fig_evo, use_container_width=True, config={'displayModeBar': False}, key="evo_chart")
         
-        # Segunda fila de gráficos
         col_graf3, col_graf4 = st.columns(2)
-        
         with col_graf3:
             fig_estado = grafico_distribucion_estados(df_f)
             if fig_estado:
-                st.plotly_chart(fig_estado, use_container_width=True, config={'displayModeBar': False})
-        
+                st.plotly_chart(fig_estado, use_container_width=True, config={'displayModeBar': False}, key="estado_chart")
         with col_graf4:
             fig_asesores = grafico_top_asesores(df_f)
             if fig_asesores:
-                st.plotly_chart(fig_asesores, use_container_width=True, config={'displayModeBar': False})
+                st.plotly_chart(fig_asesores, use_container_width=True, config={'displayModeBar': False}, key="asesores_chart")
         
-        # Mapa de calor (solo año completo)
         if sel_mes == "AÑO COMPLETO" and not sel_comuna:
             fig_heatmap = grafico_mapa_calor_comuna(df_f)
             if fig_heatmap:
-                st.plotly_chart(fig_heatmap, use_container_width=True, config={'displayModeBar': False})
+                st.plotly_chart(fig_heatmap, use_container_width=True, config={'displayModeBar': False}, key="heatmap_chart")
     
     st.markdown("---")
-
-    # Tabla operativa - scroll horizontal automático
     st.subheader(f"📋 Registro: {sel_mes}")
     
     if not df_f.empty:
