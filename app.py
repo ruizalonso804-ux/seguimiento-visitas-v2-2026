@@ -74,6 +74,12 @@ st.markdown("""
         color: #000;
     }
     
+    /* Estilo especial para botones de email */
+    div[data-testid="stHorizontalBlock"] .stButton > button[kind="secondary"] {
+        background-color: #1b5e20;
+        font-size: 0.85rem;
+    }
+    
     .logo-container {
         width: 100%;
         max-width: 400px;
@@ -453,7 +459,6 @@ def grafico_distribucion_estados(df):
         x=0.5, y=0.5
     )
     
-    # CORRECCIÓN: No usar **tema aquí, definir layout manualmente para evitar conflicto con legend
     fig.update_layout(
         template="plotly_dark",
         paper_bgcolor='rgba(0,0,0,0)',
@@ -608,7 +613,7 @@ def render_footer():
                 Ingeniero Comercial / MBA / Diplomado Estrategia UC<br>
                 <b>T:</b> <a href="tel:+56752323539">+56 75 232 3539</a> | <b>M:</b> <a href="tel:+56996091936">+56 9 9609 1936</a><br>
                 <b>E:</b> <a href="mailto:claudioruiz@carmencita.cl">claudioruiz@carmencita.cl</a><br>
-                <b>Web:</b> <a href="https://www.carmencita.cl" target="_blank">carmencita.cl</a>
+                <b>Web:</b> <a href="https://www.carmencita.cl " target="_blank">carmencita.cl</a>
             </div>
             <div>{perfil_html}</div>
         </div>
@@ -642,6 +647,52 @@ def main():
                 sel_ase = st.multiselect("Asesor", sorted(df['ASESOR'].unique()), max_selections=3)
         else:
             sel_comuna, sel_prog, sel_ase = [], [], []
+
+        # ============================================================================
+        # NUEVO: BOTONES DE REPORTE POR EMAIL
+        # ============================================================================
+        st.markdown("---")
+        st.header("📧 Reportes por Email")
+        
+        # Botones en 2 columnas
+        col_email1, col_email2 = st.columns(2)
+        
+        with col_email1:
+            if st.button("📊 Corte 15", use_container_width=True, type="secondary"):
+                with st.spinner("Enviando reporte..."):
+                    try:
+                        # Importar y ejecutar envío de email
+                        import sys
+                        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+                        from email_sender import enviar_email_reporte
+                        
+                        exito, cumpl, real, meta = enviar_email_reporte(es_corte_15=True)
+                        if exito:
+                            st.success(f"✅ Enviado: {cumpl:.1f}%")
+                            st.balloons()
+                    except Exception as e:
+                        st.error(f"❌ Error: {str(e)[:100]}")
+        
+        with col_email2:
+            if st.button("📈 Final Mes", use_container_width=True, type="secondary"):
+                with st.spinner("Enviando reporte..."):
+                    try:
+                        import sys
+                        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+                        from email_sender import enviar_email_reporte
+                        
+                        exito, cumpl, real, meta = enviar_email_reporte(es_corte_15=False)
+                        if exito:
+                            st.success(f"✅ Enviado: {cumpl:.1f}%")
+                            st.balloons()
+                    except Exception as e:
+                        st.error(f"❌ Error: {str(e)[:100]}")
+        
+        # Información adicional
+        with st.expander("ℹ️ Info", expanded=False):
+            st.caption("Los reportes se envían a:")
+            st.code("ruizalonso804@gmail.com")
+            st.caption("Automático: días 15 y 30")
 
     # Filtros
     df_f = df.copy()
