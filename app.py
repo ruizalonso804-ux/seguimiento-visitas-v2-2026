@@ -654,39 +654,63 @@ def main():
         st.markdown("---")
         st.header("📧 Reportes por Email")
         
-        # Botones en 2 columnas
-        col_email1, col_email2 = st.columns(2)
+        # Obtener credenciales de forma segura
+        email_configured = False
+        try:
+            if "EMAIL_USER" in st.secrets and "EMAIL_PASS" in st.secrets:
+                email_configured = True
+            else:
+                # Buscar en sub-secciones
+                for key in st.secrets.keys():
+                    if isinstance(st.secrets[key], dict):
+                        if "EMAIL_USER" in st.secrets[key] and "EMAIL_PASS" in st.secrets[key]:
+                            email_configured = True
+                            break
+        except:
+            pass
         
-        with col_email1:
-            if st.button("📊 Corte 15", use_container_width=True, type="secondary"):
-                with st.spinner("Enviando reporte..."):
-                    try:
-                        # Importar y ejecutar envío de email
-                        import sys
-                        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-                        from email_sender import enviar_email_reporte
-                        
-                        exito, cumpl, real, meta = enviar_email_reporte(es_corte_15=True)
-                        if exito:
-                            st.success(f"✅ Enviado: {cumpl:.1f}%")
-                            st.balloons()
-                    except Exception as e:
-                        st.error(f"❌ Error: {str(e)[:100]}")
-        
-        with col_email2:
-            if st.button("📈 Final Mes", use_container_width=True, type="secondary"):
-                with st.spinner("Enviando reporte..."):
-                    try:
-                        import sys
-                        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-                        from email_sender import enviar_email_reporte
-                        
-                        exito, cumpl, real, meta = enviar_email_reporte(es_corte_15=False)
-                        if exito:
-                            st.success(f"✅ Enviado: {cumpl:.1f}%")
-                            st.balloons()
-                    except Exception as e:
-                        st.error(f"❌ Error: {str(e)[:100]}")
+        if email_configured:
+            col_email1, col_email2 = st.columns(2)
+            
+            with col_email1:
+                if st.button("📊 Corte 15", use_container_width=True, type="secondary"):
+                    with st.spinner("Enviando reporte..."):
+                        try:
+                            # Importar aquí para evitar conflictos de inicialización
+                            import importlib
+                            import email_sender
+                            importlib.reload(email_sender)
+                            
+                            exito, cumpl, real, meta = email_sender.enviar_email_reporte(es_corte_15=True)
+                            if exito:
+                                st.success(f"✅ Enviado: {cumpl:.1f}%")
+                                st.balloons()
+                        except Exception as e:
+                            st.error(f"❌ Error: {str(e)[:200]}")
+            
+            with col_email2:
+                if st.button("📈 Final Mes", use_container_width=True, type="secondary"):
+                    with st.spinner("Enviando reporte..."):
+                        try:
+                            import importlib
+                            import email_sender
+                            importlib.reload(email_sender)
+                            
+                            exito, cumpl, real, meta = email_sender.enviar_email_reporte(es_corte_15=False)
+                            if exito:
+                                st.success(f"✅ Enviado: {cumpl:.1f}%")
+                                st.balloons()
+                        except Exception as e:
+                            st.error(f"❌ Error: {str(e)[:200]}")
+            
+            with st.expander("ℹ️ Info", expanded=False):
+                st.caption("Los reportes se envían a:")
+                st.code("ruizalonso804@gmail.com")
+                st.caption("Automático: días 15 y 30")
+        else:
+            st.warning("⚠️ Email no configurado")
+            with st.expander("Cómo configurar"):
+                st.info("Agrega EMAIL_USER y EMAIL_PASS en los secrets de Streamlit Cloud")
         
         # Información adicional
         with st.expander("ℹ️ Info", expanded=False):
