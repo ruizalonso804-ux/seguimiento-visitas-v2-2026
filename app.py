@@ -181,7 +181,7 @@ def check_password():
             st.markdown('<div class="logo-container">', unsafe_allow_html=True)
             safe_image("logo.png", width=280)
             st.markdown('</div>', unsafe_allow_html=True)
-            st.markdown("<h1 style='text-align: center; font-size: 1.5rem;'>Acceso Inteligencia Carmencita</h1>", unsafe_allow_html=True)
+            st.markdown("<h1 style='text-align: center; font-size: 1.5rem;'>Acceso Registro de Visitas Carmencita</h1>", unsafe_allow_html=True)
             pwd = st.text_input("Clave de Seguridad", type="password", placeholder="Ingrese contraseña")
             if st.button("Ingresar", use_container_width=True):
                 if pwd == st.secrets.get("APP_PASSWORD", "Felicidad2011"):
