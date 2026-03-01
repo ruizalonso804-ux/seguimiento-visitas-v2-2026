@@ -3,9 +3,9 @@ import smtplib
 import os
 import re
 import unicodedata
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
-from email.mime.image import MimeImage
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
 from datetime import datetime
 import plotly.graph_objects as go
 import plotly.io as pio
@@ -350,20 +350,20 @@ def enviar_email_reporte(es_corte_15=False, email_user=None, email_pass=None):
     cumplimiento = (total_real/total_meta*100) if total_meta > 0 else 0
     
     # Crear mensaje
-    msg = MimeMultipart('related')
+    msg = MIMEMultipart('related')
     msg['From'] = email_user
     msg['To'] = EMAIL_DESTINO
     msg['Subject'] = f"🐝 Reporte {'Corte 15' if es_corte_15 else 'Final'} - Carmencita | Cumplimiento: {cumplimiento:.1f}%"
     
     # Adjuntar HTML
-    msg.attach(MimeText(html_content, 'html'))
+    msg.attach(MIMEText(html_content, 'html'))
     
     # Crear y adjuntar gráfico
     print("📊 Generando gráfico...")
     fig = crear_grafico_resumen(df)
     if fig:
         img_bytes = pio.to_image(fig, format='png', scale=2)
-        image = MimeImage(img_bytes)
+        image = MIMEImage(img_bytes)
         image.add_header('Content-ID', '<grafico>')
         image.add_header('Content-Disposition', 'inline', filename='grafico.png')
         msg.attach(image)
