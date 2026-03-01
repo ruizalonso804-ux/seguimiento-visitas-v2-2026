@@ -14,6 +14,39 @@ import plotly.io as pio
 EMAIL_DESTINO = "ruizalonso804@gmail.com"
 MESES = ['MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
 
+def get_credentials():
+    """Obtiene credenciales desde Streamlit secrets o variables de entorno"""
+    email_user = None
+    email_pass = None
+    
+    # Intentar obtener desde Streamlit secrets (cuando se ejecuta desde la app)
+    try:
+        import streamlit as st
+        if "EMAIL_USER" in st.secrets:
+            email_user = st.secrets["EMAIL_USER"]
+        if "EMAIL_PASS" in st.secrets:
+            email_pass = st.secrets["EMAIL_PASS"]
+        if email_user and email_pass:
+            print("✅ Credenciales obtenidas desde Streamlit secrets")
+            return email_user, email_pass
+    except Exception as e:
+        print(f"ℹ️ No se pudieron obtener credenciales de Streamlit: {e}")
+    
+    # Intentar obtener desde variables de entorno (cuando se ejecuta desde GitHub Actions)
+    email_user = os.environ.get("EMAIL_USER")
+    email_pass = os.environ.get("EMAIL_PASS")
+    
+    if email_user and email_pass:
+        print("✅ Credenciales obtenidas desde variables de entorno")
+        return email_user, email_pass
+    
+    # Si llegamos aquí, no se encontraron credenciales
+    raise ValueError(
+        "No se encontraron credenciales de email. "
+        "Configura EMAIL_USER y EMAIL_PASS en Streamlit secrets (para botón manual) "
+        "o en GitHub secrets (para automatización)."
+    )
+
 def normalize_text(text):
     if pd.isna(text) or text == "": 
         return "S/I"
@@ -323,14 +356,9 @@ def generar_reporte_html(df, es_corte_15=False):
 def enviar_email_reporte(es_corte_15=False, email_user=None, email_pass=None):
     """Función principal para enviar el reporte"""
     
-    # Obtener credenciales
-    if email_user is None:
-        email_user = os.environ.get("EMAIL_USER")
-    if email_pass is None:
-        email_pass = os.environ.get("EMAIL_PASS")
-    
-    if not email_user or not email_pass:
-        raise ValueError("No se encontraron credenciales de email. Configura EMAIL_USER y EMAIL_PASS")
+    # Si no se pasan credenciales, intentar obtenerlas
+    if email_user is None or email_pass is None:
+        email_user, email_pass = get_credentials()
     
     print("📥 Cargando datos...")
     df = load_data_from_sheets()
