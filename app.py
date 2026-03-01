@@ -7,70 +7,245 @@ import os
 import re
 
 # ============================================================================
-# 1. CONFIGURACIÓN E IDENTIDAD VISUAL
+# 1. CONFIGURACIÓN E IDENTIDAD VISUAL (OPTIMIZADO MÓVIL)
 # ============================================================================
-st.set_page_config(page_title="Seguimiento Operativo | Carmencita", page_icon="🐝", layout="wide")
+st.set_page_config(
+    page_title="Seguimiento Operativo | Carmencita", 
+    page_icon="🐝", 
+    layout="wide",
+    initial_sidebar_state="collapsed"  # Colapsar sidebar en móvil por defecto
+)
 
+# CSS Responsive Mejorado
 st.markdown("""
     <style>
-    .stApp { background-color: #000000; color: #FAFAFA; }
-    [data-testid="stSidebar"] { background-color: #111111 !important; border-right: 1px solid #2E59A7; }
-    h1 { color: #2E59A7 !important; font-weight: bold !important; }
-    h2, h3 { color: #F1C40F !important; font-weight: bold !important; }
-    div[data-testid="stMetric"] { background-color: #111111; border: 1px solid #2E59A7; border-radius: 10px; padding: 15px; }
+    /* Reset y base responsive */
+    * {
+        box-sizing: border-box;
+    }
     
-    /* Footer al final de página (no fijo) */
+    .stApp { 
+        background-color: #000000; 
+        color: #FAFAFA; 
+    }
+    
+    [data-testid="stSidebar"] { 
+        background-color: #111111 !important; 
+        border-right: 1px solid #2E59A7; 
+        width: 100% !important;
+    }
+    
+    @media (min-width: 768px) {
+        [data-testid="stSidebar"] {
+            min-width: 300px !important;
+            max-width: 400px !important;
+        }
+    }
+    
+    /* Tipografía responsive */
+    h1 { 
+        color: #2E59A7 !important; 
+        font-weight: bold !important;
+        font-size: clamp(1.5rem, 5vw, 2.5rem) !important;
+        line-height: 1.2 !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    h2 { 
+        color: #F1C40F !important; 
+        font-weight: bold !important;
+        font-size: clamp(1.2rem, 4vw, 1.8rem) !important;
+        line-height: 1.3 !important;
+    }
+    
+    h3 { 
+        color: #F1C40F !important; 
+        font-weight: bold !important;
+        font-size: clamp(1rem, 3.5vw, 1.4rem) !important;
+    }
+    
+    /* Métricas responsive */
+    div[data-testid="stMetric"] { 
+        background-color: #111111; 
+        border: 1px solid #2E59A7; 
+        border-radius: 10px; 
+        padding: 10px;
+        min-width: 0;
+    }
+    
+    div[data-testid="stMetric"] > div {
+        width: 100%;
+    }
+    
+    @media (max-width: 640px) {
+        div[data-testid="stMetric"] {
+            padding: 8px;
+        }
+        div[data-testid="stMetric"] label {
+            font-size: 0.75rem !important;
+        }
+        div[data-testid="stMetric"] div[data-testid="stMetricValue"] {
+            font-size: 1.2rem !important;
+        }
+    }
+    
+    /* Botones responsive */
+    .stButton > button {
+        width: 100%;
+        background-color: #2E59A7;
+        color: #FAFAFA;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: all 0.3s;
+    }
+    
+    .stButton > button:hover {
+        background-color: #F1C40F;
+        color: #000;
+    }
+    
+    /* Tablas responsive */
+    .stDataFrame {
+        font-size: 0.85rem;
+    }
+    
+    @media (max-width: 640px) {
+        .stDataFrame {
+            font-size: 0.75rem;
+        }
+    }
+    
+    /* Selectbox y multiselect responsive */
+    .stSelectbox, .stMultiselect {
+        width: 100%;
+    }
+    
+    /* Logo responsive */
+    .logo-container {
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 10px;
+    }
+    
+    @media (max-width: 480px) {
+        .logo-container {
+            max-width: 250px;
+        }
+    }
+    
+    /* Footer responsive */
     .footer-container {
         background: linear-gradient(90deg, #111111 0%, #1a1a1a 100%);
         color: #FAFAFA;
         border-top: 3px solid #2E59A7;
-        padding: 30px 0;
-        margin-top: 50px;
+        padding: 20px 15px;
+        margin-top: 30px;
         box-shadow: 0 -4px 20px rgba(46, 89, 167, 0.3);
     }
+    
     .footer-content {
         max-width: 1200px;
         margin: 0 auto;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
         align-items: center;
-        gap: 40px;
-        padding: 0 40px;
+        gap: 20px;
+        text-align: center;
     }
+    
+    @media (min-width: 640px) {
+        .footer-content {
+            flex-direction: row;
+            justify-content: center;
+            text-align: left;
+            gap: 30px;
+            padding: 0 20px;
+        }
+    }
+    
     .footer-info {
-        font-size: 14px;
-        line-height: 1.8;
-        text-align: left;
+        font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+        line-height: 1.6;
+        word-break: break-word;
     }
+    
     .footer-info .nombre {
         color: #F1C40F;
         font-weight: bold;
-        font-size: 16px;
+        font-size: clamp(0.9rem, 3vw, 1.1rem);
     }
+    
     .footer-info .cargo {
         color: #2E59A7;
         font-weight: bold;
     }
+    
     .footer-info a {
         color: #F1C40F;
         text-decoration: none;
+        word-break: break-all;
     }
+    
     .footer-info a:hover {
         text-decoration: underline;
     }
+    
     .footer-perfil {
-        width: 100px;
-        height: 100px;
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
         border: 3px solid #2E59A7;
         object-fit: cover;
-        box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);
+        box-shadow: 0 0 15px rgba(241, 196, 15, 0.3);
+    }
+    
+    @media (min-width: 640px) {
+        .footer-perfil {
+            width: 100px;
+            height: 100px;
+        }
+    }
+    
+    /* Contenedor de gráficos responsive */
+    .plotly-chart {
+        width: 100% !important;
+    }
+    
+    /* Espaciado responsive */
+    .block-container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        padding-top: 1rem !important;
+    }
+    
+    @media (min-width: 768px) {
+        .block-container {
+            padding-left: 2rem !important;
+            padding-right: 2rem !important;
+        }
+    }
+    
+    /* Scroll horizontal para tablas en móvil */
+    .stDataFrame > div {
+        overflow-x: auto;
+    }
+    
+    /* Ajuste de columnas en móvil */
+    @media (max-width: 640px) {
+        [data-testid="column"] {
+            width: 100% !important;
+            flex: 0 0 100% !important;
+            margin-bottom: 10px;
+        }
     }
     </style>
 """, unsafe_allow_html=True)
 
 # ============================================================================
-# 2. SEGURIDAD
+# 2. SEGURIDAD (OPTIMIZADA MÓVIL)
 # ============================================================================
 def safe_image(file_path, width=200):
     if os.path.exists(file_path): 
@@ -81,18 +256,28 @@ def safe_image(file_path, width=200):
         return False
 
 def check_password():
-    if "password_correct" not in st.session_state: st.session_state["password_correct"] = False
+    if "password_correct" not in st.session_state: 
+        st.session_state["password_correct"] = False
     if not st.session_state["password_correct"]:
-        col1, col2, col3 = st.columns([1, 2, 1])
+        # Layout más compacto para móvil
+        col1, col2, col3 = st.columns([1, 6, 1])
         with col2:
+            st.markdown('<div class="logo-container">', unsafe_allow_html=True)
             safe_image("logo.png", width=280)
-            st.title("Acceso Inteligencia Carmencita")
-            pwd = st.text_input("Clave de Seguridad", type="password")
-            if st.button("Ingresar"):
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            st.markdown("<h1 style='text-align: center; font-size: 1.5rem;'>Acceso Inteligencia Carmencita</h1>", unsafe_allow_html=True)
+            
+            # Input más grande para táctil
+            pwd = st.text_input("Clave de Seguridad", type="password", 
+                               placeholder="Ingrese contraseña")
+            
+            if st.button("Ingresar", use_container_width=True):
                 if pwd == st.secrets.get("APP_PASSWORD", "Felicidad2011"):
                     st.session_state["password_correct"] = True
                     st.rerun()
-                else: st.error("❌ Clave incorrecta")
+                else: 
+                    st.error("❌ Clave incorrecta")
         return False
     return True
 
@@ -100,12 +285,14 @@ def check_password():
 # 3. MOTOR DE DATOS (FILTRADO DE FILAS VACÍAS)
 # ============================================================================
 def normalize_text(text):
-    if pd.isna(text) or text == "": return "S/I"
+    if pd.isna(text) or text == "": 
+        return "S/I"
     text = str(text).strip().upper()
     return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
 
 def clean_val(val):
-    if pd.isna(val): return ""
+    if pd.isna(val): 
+        return ""
     return str(val).replace(".", "").replace("-", "").strip().upper()
 
 def process_sheet_auto(url):
@@ -117,11 +304,13 @@ def process_sheet_auto(url):
             if "RUT" in row_str and "NOMBRE" in row_str:
                 header_idx = i
                 break
-        if header_idx is None: return None
+        if header_idx is None: 
+            return None
         df = pd.read_csv(url, skiprows=header_idx)
         df.columns = [str(c).strip().upper() for c in df.columns]
         return df
-    except: return None
+    except: 
+        return None
 
 @st.cache_data(ttl=60)
 def load_data():
@@ -133,16 +322,18 @@ def load_data():
         
         df_p = process_sheet_auto(url_p)
         df_r = process_sheet_auto(url_r)
-        if df_p is None or df_r is None: return pd.DataFrame()
+        if df_p is None or df_r is None: 
+            return pd.DataFrame()
 
         def get_col_exact(df, key):
             for c in df.columns:
-                if key == c: return c
+                if key == c: 
+                    return c
             for c in df.columns:
-                if key in c: return c
+                if key in c: 
+                    return c
             return None
 
-        # Columnas de Identidad
         col_rut_p, col_rut_r = get_col_exact(df_p, "RUT"), get_col_exact(df_r, "RUT")
         col_nom = get_col_exact(df_p, "NOMBRE")
         col_tel = get_col_exact(df_p, "TELEFONO")
@@ -171,7 +362,6 @@ def load_data():
                 meta = 0 if pd.isna(meta) else int(meta)
                 real = 0 if pd.isna(real) else int(real)
 
-                # --- FILTRO CRÍTICO: SOLO GUARDAR SI HAY ACTIVIDAD ---
                 if meta >= 1 or real >= 1:
                     if meta >= 1 and real >= 1: 
                         est, emo, color = "CUMPLIDA", "✅", "background-color: #1b5e20"
@@ -198,21 +388,25 @@ def load_data():
         return pd.DataFrame()
 
 # ============================================================================
-# 4. FUNCIONES DE VISUALIZACIÓN
+# 4. FUNCIONES DE VISUALIZACIÓN (OPTIMIZADAS MÓVIL)
 # ============================================================================
 def crear_tema_plotly():
-    """Configuración visual oscura para gráficos Plotly"""
     return dict(
         template="plotly_dark",
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(17,17,17,1)',
-        font=dict(color='#FAFAFA', family='Arial, sans-serif'),
-        title_font=dict(color='#F1C40F', size=16),
-        legend=dict(bgcolor='rgba(17,17,17,0.8)', bordercolor='#2E59A7', borderwidth=1)
+        font=dict(color='#FAFAFA', family='Arial, sans-serif', size=10),
+        title_font=dict(color='#F1C40F', size=14),
+        legend=dict(
+            bgcolor='rgba(17,17,17,0.8)', 
+            bordercolor='#2E59A7', 
+            borderwidth=1,
+            font=dict(size=9)
+        ),
+        margin=dict(l=10, r=10, t=40, b=10)
     )
 
 def grafico_cumplimiento_por_programa(df):
-    """Gráfico de barras horizontales: Meta vs Real por Programa"""
     if df.empty:
         return None
     
@@ -222,7 +416,6 @@ def grafico_cumplimiento_por_programa(df):
     
     fig = go.Figure()
     
-    # Barras de Meta (transparentes con borde)
     fig.add_trace(go.Bar(
         y=agrupado['ASESORÍA'],
         x=agrupado['META'],
@@ -231,10 +424,10 @@ def grafico_cumplimiento_por_programa(df):
         marker=dict(color='rgba(46, 89, 167, 0.3)', line=dict(color='#2E59A7', width=2)),
         text=agrupado['META'],
         textposition='inside',
+        textfont=dict(size=9),
         hovertemplate='<b>%{y}</b><br>Meta: %{x}<extra></extra>'
     ))
     
-    # Barras de Real (sólidas)
     fig.add_trace(go.Bar(
         y=agrupado['ASESORÍA'],
         x=agrupado['REAL'],
@@ -243,7 +436,7 @@ def grafico_cumplimiento_por_programa(df):
         marker=dict(color='#F1C40F', line=dict(color='#F1C40F', width=1)),
         text=agrupado['REAL'],
         textposition='outside',
-        textfont=dict(color='#F1C40F', size=12),
+        textfont=dict(color='#F1C40F', size=10),
         hovertemplate='<b>%{y}</b><br>Real: %{x}<br>Cumplimiento: %{customdata}%<extra></extra>',
         customdata=agrupado['CUMPLIMIENTO %']
     ))
@@ -251,20 +444,18 @@ def grafico_cumplimiento_por_programa(df):
     tema = crear_tema_plotly()
     fig.update_layout(
         **tema,
-        title="Avance por Programa de Asesoría",
-        xaxis_title="N° de Visitas",
+        title=dict(text="Avance por Programa", font=dict(size=14)),
+        xaxis_title="N° Visitas",
         yaxis_title="",
         barmode='overlay',
-        height=400,
-        margin=dict(l=20, r=20, t=50, b=20),
-        xaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', zerolinecolor='#2E59A7'),
-        yaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', zerolinecolor='#2E59A7')
+        height=350,
+        xaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', zerolinecolor='#2E59A7', tickfont=dict(size=9)),
+        yaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', zerolinecolor='#2E59A7', tickfont=dict(size=9))
     )
     
     return fig
 
 def grafico_evolucion_mensual(df):
-    """Gráfico de líneas: Evolución de visitas a lo largo del año"""
     if df.empty:
         return None
     
@@ -273,30 +464,29 @@ def grafico_evolucion_mensual(df):
     
     fig = go.Figure()
     
-    # Línea de Meta
     fig.add_trace(go.Scatter(
         x=evolucion.index,
         y=evolucion['META'],
         mode='lines+markers+text',
-        name='Meta Acumulada',
-        line=dict(color='#2E59A7', width=3, dash='dash'),
-        marker=dict(size=8, symbol='diamond'),
+        name='Meta',
+        line=dict(color='#2E59A7', width=2, dash='dash'),
+        marker=dict(size=6, symbol='diamond'),
         text=evolucion['META'].astype(int),
         textposition='top center',
+        textfont=dict(size=8),
         hovertemplate='%{x}<br>Meta: %{y}<extra></extra>'
     ))
     
-    # Línea de Real
     fig.add_trace(go.Scatter(
         x=evolucion.index,
         y=evolucion['REAL'],
         mode='lines+markers+text',
-        name='Real Ejecutado',
-        line=dict(color='#F1C40F', width=4),
-        marker=dict(size=10, symbol='circle'),
+        name='Real',
+        line=dict(color='#F1C40F', width=3),
+        marker=dict(size=8, symbol='circle'),
         text=evolucion['REAL'].astype(int),
         textposition='bottom center',
-        textfont=dict(color='#F1C40F'),
+        textfont=dict(color='#F1C40F', size=9),
         fill='tozeroy',
         fillcolor='rgba(241, 196, 15, 0.1)',
         hovertemplate='%{x}<br>Real: %{y}<extra></extra>'
@@ -305,20 +495,18 @@ def grafico_evolucion_mensual(df):
     tema = crear_tema_plotly()
     fig.update_layout(
         **tema,
-        title="Evolución Mensual de Visitas",
+        title=dict(text="Evolución Mensual", font=dict(size=14)),
         xaxis_title="Mes",
-        yaxis_title="N° de Visitas",
-        height=400,
-        margin=dict(l=20, r=20, t=50, b=20),
-        xaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', zerolinecolor='#2E59A7'),
-        yaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', zerolinecolor='#2E59A7'),
+        yaxis_title="Visitas",
+        height=350,
+        xaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', zerolinecolor='#2E59A7', tickfont=dict(size=9)),
+        yaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', zerolinecolor='#2E59A7', tickfont=dict(size=9)),
         hovermode='x unified'
     )
     
     return fig
 
 def grafico_distribucion_estados(df):
-    """Gráfico circular: Distribución de estados (Cumplida/Pendiente/Extra-plan)"""
     if df.empty:
         return None
     
@@ -334,32 +522,30 @@ def grafico_distribucion_estados(df):
             line=dict(color='#000000', width=2)
         ),
         textinfo='label+percent',
-        textfont=dict(size=14, color='#FAFAFA'),
-        hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
+        textfont=dict(size=11, color='#FAFAFA'),
+        hovertemplate='<b>%{label}</b><br>Cant: %{value}<br>%{percent}<extra></extra>'
     )])
     
-    # Agregar total en el centro
     total = estados.sum()
     fig.add_annotation(
         text=f"<b>{total}</b><br>Total",
         showarrow=False,
-        font=dict(size=20, color='#F1C40F'),
+        font=dict(size=16, color='#F1C40F'),
         x=0.5, y=0.5
     )
     
     tema = crear_tema_plotly()
     fig.update_layout(
         **tema,
-        title="Distribución de Estados",
-        height=400,
-        margin=dict(l=20, r=20, t=50, b=20),
-        showlegend=True
+        title=dict(text="Distribución Estados", font=dict(size=14)),
+        height=350,
+        showlegend=True,
+        legend=dict(font=dict(size=9))
     )
     
     return fig
 
 def grafico_top_asesores(df):
-    """Gráfico de barras verticales: Top asesores por cumplimiento"""
     if df.empty:
         return None
     
@@ -369,16 +555,12 @@ def grafico_top_asesores(df):
         'RUT': 'nunique'
     }).reset_index()
     asesores['CUMPLIMIENTO %'] = (asesores['REAL'] / asesores['META'] * 100).fillna(0).round(1)
-    asesores = asesores.sort_values('CUMPLIMIENTO %', ascending=False).head(10)
+    asesores = asesores.sort_values('CUMPLIMIENTO %', ascending=False).head(8)
     
-    # Crear color basado en cumplimiento (verde > amarillo > rojo)
     def get_color(pct):
-        if pct >= 80:
-            return '#1b5e20'  # Verde oscuro
-        elif pct >= 50:
-            return '#f57f17'  # Naranja/Amarillo
-        else:
-            return '#b71c1c'  # Rojo
+        if pct >= 80: return '#1b5e20'
+        elif pct >= 50: return '#f57f17'
+        else: return '#b71c1c'
     
     asesores['COLOR'] = asesores['CUMPLIMIENTO %'].apply(get_color)
     
@@ -388,33 +570,31 @@ def grafico_top_asesores(df):
         x=asesores['ASESOR'],
         y=asesores['CUMPLIMIENTO %'],
         marker=dict(
-            color=asesores['COLOR'],  # Colores individuales por barra
+            color=asesores['COLOR'],
             line=dict(color='#2E59A7', width=1)
         ),
         text=asesores['CUMPLIMIENTO %'].astype(str) + '%',
         textposition='outside',
-        textfont=dict(color='#FAFAFA'),
-        hovertemplate='<b>%{x}</b><br>Cumplimiento: %{y}%<br>Real: %{customdata[0]} / Meta: %{customdata[1]}<br>Apicultores: %{customdata[2]}<extra></extra>',
-        customdata=asesores[['REAL', 'META', 'RUT']].values
+        textfont=dict(color='#FAFAFA', size=9),
+        hovertemplate='<b>%{x}</b><br>%{y}%<br>Real: %{customdata[0]}/Meta: %{customdata[1]}<extra></extra>',
+        customdata=asesores[['REAL', 'META']].values
     ))
     
     tema = crear_tema_plotly()
     fig.update_layout(
         **tema,
-        title="Top Asesores - % de Cumplimiento",
+        title=dict(text="Top Asesores %", font=dict(size=14)),
         xaxis_title="",
         yaxis_title="% Cumplimiento",
-        height=400,
-        margin=dict(l=20, r=20, t=50, b=100),
-        xaxis=dict(tickangle=-45, gridcolor='rgba(46, 89, 167, 0.2)'),
-        yaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', range=[0, 110]),
+        height=350,
+        xaxis=dict(tickangle=-45, tickfont=dict(size=8), gridcolor='rgba(46, 89, 167, 0.2)'),
+        yaxis=dict(gridcolor='rgba(46, 89, 167, 0.2)', range=[0, 110], tickfont=dict(size=9)),
         showlegend=False
     )
     
     return fig
 
 def grafico_mapa_calor_comuna(df):
-    """Heatmap de actividad por Comuna y Mes"""
     if df.empty:
         return None
     
@@ -426,19 +606,15 @@ def grafico_mapa_calor_comuna(df):
         fill_value=0
     )
     
-    # Si no hay datos, retornar None
     if pivot.empty:
         return None
     
-    # Ordenar meses correctamente
     meses_orden = ['MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
     pivot = pivot.reindex(columns=[m for m in meses_orden if m in pivot.columns])
     
-    # Si después de reindexar no hay columnas, retornar None
     if pivot.empty or len(pivot.columns) == 0:
         return None
     
-    # Crear figura con go.Heatmap
     fig = go.Figure(data=go.Heatmap(
         z=pivot.values,
         x=list(pivot.columns),
@@ -447,64 +623,54 @@ def grafico_mapa_calor_comuna(df):
         showscale=True,
         text=pivot.values,
         texttemplate="%{text}",
-        textfont={"size": 10, "color": "white"},
-        hovertemplate='<b>%{y}</b><br>Mes: %{x}<br>Visitas: %{z}<extra></extra>'
+        textfont={"size": 9, "color": "white"},
+        hovertemplate='<b>%{y}</b><br>%{x}: %{z} visitas<extra></extra>'
     ))
     
-    # Configurar colorbar por separado para mayor compatibilidad
     fig.update_traces(
         colorbar=dict(
-            title=dict(text="Visitas", font=dict(color='#FAFAFA')),
-            tickfont=dict(color='#FAFAFA'),
+            title=dict(text="Visitas", font=dict(color='#FAFAFA', size=10)),
+            tickfont=dict(color='#FAFAFA', size=9),
             bgcolor='rgba(17,17,17,0.8)',
             bordercolor='#2E59A7',
-            borderwidth=1
+            borderwidth=1,
+            thickness=15,
+            len=0.5
         )
     )
     
     fig.update_layout(
-        title=dict(
-            text="Mapa de Calor: Visitas por Comuna y Mes",
-            font=dict(color='#F1C40F', size=16)
-        ),
+        title=dict(text="Mapa Calor: Comuna/Mes", font=dict(size=14, color='#F1C40F')),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(17,17,17,1)',
-        font=dict(color='#FAFAFA', family='Arial, sans-serif'),
-        height=500,
-        margin=dict(l=20, r=20, t=50, b=20),
-        xaxis=dict(
-            side='bottom',
-            gridcolor='rgba(46, 89, 167, 0.2)',
-            tickfont=dict(color='#FAFAFA')
-        ),
-        yaxis=dict(
-            gridcolor='rgba(46, 89, 167, 0.2)',
-            tickfont=dict(color='#FAFAFA')
-        )
+        font=dict(color='#FAFAFA', family='Arial, sans-serif', size=10),
+        height=400,
+        margin=dict(l=10, r=10, t=40, b=10),
+        xaxis=dict(side='bottom', tickfont=dict(size=9)),
+        yaxis=dict(tickfont=dict(size=9))
     )
     
     return fig
 
 # ============================================================================
-# 5. COMPONENTES UI
+# 5. COMPONENTES UI (OPTIMIZADOS MÓVIL)
 # ============================================================================
 def render_logo():
-    """Renderiza el logo grande en la parte superior"""
-    col1, col2, col3 = st.columns([1, 3, 1])
+    col1, col2, col3 = st.columns([1, 6, 1])
     with col2:
+        st.markdown('<div class="logo-container">', unsafe_allow_html=True)
         if os.path.exists("logo.png"):
-            st.image("logo.png", width=400, use_container_width=True)
+            st.image("logo.png", use_container_width=True)
         else:
             st.markdown("""
-                <div style="text-align: center; padding: 20px; border: 2px dashed #2E59A7; border-radius: 10px; margin: 20px 0;">
-                    <h2 style="color: #2E59A7; margin: 0;">🐝 CARMENCITA</h2>
-                    <p style="color: #F1C40F; margin: 5px 0 0 0;">Sistema de Seguimiento Operativo</p>
+                <div style="text-align: center; padding: 15px; border: 2px dashed #2E59A7; border-radius: 10px; margin: 10px 0;">
+                    <h2 style="color: #2E59A7; margin: 0; font-size: 1.5rem;">🐝 CARMENCITA</h2>
+                    <p style="color: #F1C40F; margin: 5px 0 0 0; font-size: 0.9rem;">Sistema de Seguimiento</p>
                 </div>
             """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 def render_footer():
-    """Renderiza el footer con información de contacto y foto de perfil al final de la página"""
-    # Verificar si existe la imagen de perfil
     perfil_html = ""
     if os.path.exists("perfil.jpg"):
         import base64
@@ -513,17 +679,17 @@ def render_footer():
             img_b64 = base64.b64encode(img_bytes).decode()
         perfil_html = f'<img src="data:image/jpeg;base64,{img_b64}" class="footer-perfil" alt="Perfil">'
     else:
-        perfil_html = '<div style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid #2E59A7; background: #2E59A7; display: flex; align-items: center; justify-content: center; font-size: 40px;">👤</div>'
+        perfil_html = '<div style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #2E59A7; background: #2E59A7; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto;">👤</div>'
     
     footer_html = f"""
     <div class="footer-container">
         <div class="footer-content">
             <div class="footer-info">
                 <span class="nombre">CLAUDIO RUIZ O.</span> | <span class="cargo">Gerente Regional Sur</span> | CARMENCITA export<br>
-                Ingeniero Comercial / MBA / Diplomado en Estrategia UC<br>
-                <b>T:</b> <a href="tel:+56752323539">+56 75 232 3539</a> | <b>Móvil:</b> <a href="tel:+56996091936">+56 9 9609 1936</a><br>
+                Ingeniero Comercial / MBA / Diplomado Estrategia UC<br>
+                <b>T:</b> <a href="tel:+56752323539">+56 75 232 3539</a> | <b>M:</b> <a href="tel:+56996091936">+56 9 9609 1936</a><br>
                 <b>E:</b> <a href="mailto:claudioruiz@carmencita.cl">claudioruiz@carmencita.cl</a><br>
-                <b>Website:</b> <a href="https://www.carmencita.cl" target="_blank">www.carmencita.cl</a>
+                <b>Web:</b> <a href="https://www.carmencita.cl" target="_blank">carmencita.cl</a>
             </div>
             <div>
                 {perfil_html}
@@ -534,29 +700,38 @@ def render_footer():
     st.markdown(footer_html, unsafe_allow_html=True)
 
 # ============================================================================
-# 6. DASHBOARD
+# 6. DASHBOARD (RESPONSIVE)
 # ============================================================================
 def main():
-    if not check_password(): return
+    if not check_password(): 
+        return
     
-    # Logo grande en la parte superior
     render_logo()
     
     df = load_data()
     
+    # Sidebar optimizado para móvil
     with st.sidebar:
-        # Eliminada la foto de perfil de la barra lateral
         st.markdown("---")
-        if st.button("🔄 Sincronizar Datos"):
+        if st.button("🔄 Sincronizar", use_container_width=True):
             st.cache_data.clear()
             st.rerun()
+        
         st.header("Filtros")
-        global sel_mes
-        sel_mes = st.selectbox("Mes de Seguimiento", ["AÑO COMPLETO", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"])
+        
+        # Selector de mes más compacto
+        sel_mes = st.selectbox(
+            "Mes", 
+            ["AÑO COMPLETO", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"],
+            index=0
+        )
+        
         if not df.empty:
-            sel_comuna = st.multiselect("Filtrar Comuna", sorted(df['COMUNA'].unique()))
-            sel_prog = st.multiselect("Filtrar Asesoría", sorted(df['ASESORÍA'].unique()))
-            sel_ase = st.multiselect("Filtrar Asesor", sorted(df['ASESOR'].unique()))
+            # Usar expanders en móvil para ahorrar espacio
+            with st.expander("Filtros Avanzados", expanded=False):
+                sel_comuna = st.multiselect("Comuna", sorted(df['COMUNA'].unique()), max_selections=3)
+                sel_prog = st.multiselect("Asesoría", sorted(df['ASESORÍA'].unique()), max_selections=3)
+                sel_ase = st.multiselect("Asesor", sorted(df['ASESOR'].unique()), max_selections=3)
         else:
             sel_comuna, sel_prog, sel_ase = [], [], []
 
@@ -565,62 +740,69 @@ def main():
     if sel_mes != "AÑO COMPLETO":
         df_f = df_f[df_f['MES'] == sel_mes]
     
-    if sel_comuna: df_f = df_f[df_f['COMUNA'].isin(sel_comuna)]
-    if sel_prog: df_f = df_f[df_f['ASESORÍA'].isin(sel_prog)]
-    if sel_ase: df_f = df_f[df_f['ASESOR'].isin(sel_ase)]
+    if sel_comuna: 
+        df_f = df_f[df_f['COMUNA'].isin(sel_comuna)]
+    if sel_prog: 
+        df_f = df_f[df_f['ASESORÍA'].isin(sel_prog)]
+    if sel_ase: 
+        df_f = df_f[df_f['ASESOR'].isin(sel_ase)]
 
     st.title("📊 Seguimiento Operativo 2026")
     
-    # --- KPIs CORREGIDOS ---
+    # KPIs - 2x2 grid en móvil, 4 columnas en desktop
     c1, c2, c3, c4 = st.columns(4)
     m_t, r_t = df_f['META'].sum(), df_f['REAL'].sum()
-    c1.metric("% CUMPLIMIENTO", f"{(r_t/m_t*100 if m_t > 0 else 0):.1f}%")
-    c2.metric("REALIZADAS", int(r_t))
-    c3.metric("BRECHA PENDIENTE", int(max(0, m_t - r_t)))
-    # Cuenta RUTs únicos para no inflar la cantidad de personas
-    c4.metric("USUARIOS ATENDIDOS", df_f['RUT'].nunique())
+    
+    with c1:
+        st.metric("% CUMPLIMIENTO", f"{(r_t/m_t*100 if m_t > 0 else 0):.1f}%")
+    with c2:
+        st.metric("REALIZADAS", int(r_t))
+    with c3:
+        st.metric("PENDIENTES", int(max(0, m_t - r_t)))
+    with c4:
+        st.metric("USUARIOS", df_f['RUT'].nunique())
 
-    # --- SECCIÓN DE GRÁFICOS ---
+    # Gráficos - apilados en móvil, 2 columnas en desktop
     if not df_f.empty:
         st.markdown("---")
-        st.subheader("📈 Análisis Visual del Avance")
+        st.subheader("📈 Análisis Visual")
         
-        # Fila 1: Gráficos principales
+        # Primera fila de gráficos
         col_graf1, col_graf2 = st.columns(2)
         
         with col_graf1:
             fig_prog = grafico_cumplimiento_por_programa(df_f)
             if fig_prog:
-                st.plotly_chart(fig_prog, use_container_width=True, key="prog_chart")
+                st.plotly_chart(fig_prog, use_container_width=True, config={'displayModeBar': False})
         
         with col_graf2:
             fig_evo = grafico_evolucion_mensual(df_f)
             if fig_evo:
-                st.plotly_chart(fig_evo, use_container_width=True, key="evo_chart")
+                st.plotly_chart(fig_evo, use_container_width=True, config={'displayModeBar': False})
         
-        # Fila 2: Gráficos secundarios
+        # Segunda fila de gráficos
         col_graf3, col_graf4 = st.columns(2)
         
         with col_graf3:
             fig_estado = grafico_distribucion_estados(df_f)
             if fig_estado:
-                st.plotly_chart(fig_estado, use_container_width=True, key="estado_chart")
+                st.plotly_chart(fig_estado, use_container_width=True, config={'displayModeBar': False})
         
         with col_graf4:
             fig_asesores = grafico_top_asesores(df_f)
             if fig_asesores:
-                st.plotly_chart(fig_asesores, use_container_width=True, key="asesores_chart")
+                st.plotly_chart(fig_asesores, use_container_width=True, config={'displayModeBar': False})
         
-        # Fila 3: Mapa de calor (solo si es año completo y no hay filtro de comuna específico)
+        # Mapa de calor (solo año completo)
         if sel_mes == "AÑO COMPLETO" and not sel_comuna:
             fig_heatmap = grafico_mapa_calor_comuna(df_f)
             if fig_heatmap:
-                st.plotly_chart(fig_heatmap, use_container_width=True, key="heatmap_chart")
+                st.plotly_chart(fig_heatmap, use_container_width=True, config={'displayModeBar': False})
     
     st.markdown("---")
 
-    # --- TABLA OPERATIVA ACOTRADA ---
-    st.subheader(f"📋 Registro de Visitas: {sel_mes}")
+    # Tabla operativa - scroll horizontal automático
+    st.subheader(f"📋 Registro: {sel_mes}")
     
     if not df_f.empty:
         cols_mostrar = ['USUARIO', 'RUT', 'TELEFONO', 'COMUNA', 'SECTOR', 'ASESORÍA', 'ASESOR', 'MES', 'ESTADO', 'EMOJI', 'COLOR']
@@ -633,12 +815,12 @@ def main():
             df_tabla.style.apply(style_rows, axis=1),
             column_config={"COLOR": None}, 
             use_container_width=True,
-            height=600
+            height=400,
+            hide_index=True
         )
     else:
-        st.info(f"No hay actividad registrada para los filtros seleccionados.")
+        st.info("No hay actividad registrada para los filtros seleccionados.")
 
-    # Renderizar footer al final de todo (no fijo)
     render_footer()
 
 if __name__ == "__main__":
