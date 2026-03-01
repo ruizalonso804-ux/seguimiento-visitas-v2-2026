@@ -23,50 +23,45 @@ def get_credentials():
     try:
         import streamlit as st
         
-        # Buscar EMAIL_USER en cualquier parte de los secrets
+        # Debug: mostrar qué secrets están disponibles
+        print(f"Secrets disponibles: {list(st.secrets.keys())}")
+        
+        # Buscar EMAIL_USER
         if "EMAIL_USER" in st.secrets:
             email_user = st.secrets["EMAIL_USER"]
-            print("✅ EMAIL_USER encontrado en secrets raíz")
-        else:
-            # Buscar en sub-secciones
-            for key in st.secrets.keys():
-                if isinstance(st.secrets[key], dict) and "EMAIL_USER" in st.secrets[key]:
-                    email_user = st.secrets[key]["EMAIL_USER"]
-                    print(f"✅ EMAIL_USER encontrado en sección {key}")
-                    break
+            print("✅ EMAIL_USER encontrado en raíz")
         
-        # Buscar EMAIL_PASS en cualquier parte de los secrets
+        # Buscar EMAIL_PASS
         if "EMAIL_PASS" in st.secrets:
             email_pass = st.secrets["EMAIL_PASS"]
-            print("✅ EMAIL_PASS encontrado en secrets raíz")
-        else:
-            # Buscar en sub-secciones
+            print("✅ EMAIL_PASS encontrado en raíz")
+        
+        # Si no están en raíz, buscar en sub-secciones
+        if not email_user or not email_pass:
             for key in st.secrets.keys():
-                if isinstance(st.secrets[key], dict) and "EMAIL_PASS" in st.secrets[key]:
-                    email_pass = st.secrets[key]["EMAIL_PASS"]
-                    print(f"✅ EMAIL_PASS encontrado en sección {key}")
-                    break
+                if isinstance(st.secrets[key], dict):
+                    if not email_user and "EMAIL_USER" in st.secrets[key]:
+                        email_user = st.secrets[key]["EMAIL_USER"]
+                        print(f"✅ EMAIL_USER encontrado en [{key}]")
+                    if not email_pass and "EMAIL_PASS" in st.secrets[key]:
+                        email_pass = st.secrets[key]["EMAIL_PASS"]
+                        print(f"✅ EMAIL_PASS encontrado en [{key}]")
         
         if email_user and email_pass:
-            print("✅ Credenciales obtenidas desde Streamlit secrets")
             return email_user, email_pass
             
     except Exception as e:
-        print(f"ℹ️ No se pudieron obtener credenciales de Streamlit: {e}")
+        print(f"Error obteniendo de Streamlit: {e}")
     
-    # Intentar obtener desde variables de entorno (cuando se ejecuta desde GitHub Actions)
+    # Intentar desde variables de entorno (GitHub Actions)
     email_user = os.environ.get("EMAIL_USER")
     email_pass = os.environ.get("EMAIL_PASS")
     
     if email_user and email_pass:
-        print("✅ Credenciales obtenidas desde variables de entorno")
+        print("✅ Credenciales desde variables de entorno")
         return email_user, email_pass
     
-    # Si llegamos aquí, no se encontraron credenciales
-    raise ValueError(
-        "No se encontraron credenciales de email. "
-        "Configura EMAIL_USER y EMAIL_PASS en Streamlit secrets o variables de entorno."
-    )
+    raise ValueError("No se encontraron credenciales de email")
 
 def normalize_text(text):
     if pd.isna(text) or text == "": 
@@ -99,7 +94,8 @@ def process_sheet_auto(url):
 def load_data_from_sheets():
     """Carga datos desde Google Sheets"""
     try:
-        # Intentar obtener desde secrets de Streamlit o variables de entorno
+        # Intentar obtener URL
+        sheet_url = None
         try:
             import streamlit as st
             sheet_url = st.secrets["connections"]["gsheets"]["spreadsheet"]
@@ -159,11 +155,11 @@ def load_data_from_sheets():
 
                 if meta >= 1 or real >= 1:
                     if meta >= 1 and real >= 1: 
-                        est, emo, color = "CUMPLIDA", "✅", "#1b5e20"
+                        est, emo = "CUMPLIDA", "✅"
                     elif meta >= 1 and real == 0: 
-                        est, emo, color = "PENDIENTE", "❌", "#b71c1c"
+                        est, emo = "PENDIENTE", "❌"
                     else: 
-                        est, emo, color = "EXTRA-PLAN", "⚠️", "#f57f17"
+                        est, emo = "EXTRA-PLAN", "⚠️"
                     
                     consolidado.append({
                         'USUARIO': normalize_text(row.get(col_nom, 'SIN NOMBRE')),
@@ -227,13 +223,8 @@ def generar_reporte_html(df, es_corte_15=False):
     """Genera el HTML del reporte"""
     
     hoy = datetime.now()
-    mes_num = hoy.month
-    mes_actual = MESES[mes_num - 3] if mes_num >= 3 else 'MAR'
-    
-    # Determinar mes actual basado en datos
     meses_con_datos = df[df['REAL'] > 0]['MES'].unique()
-    if len(meses_con_datos) > 0:
-        mes_actual = meses_con_datos[-1]
+    mes_actual = meses_con_datos[-1] if len(meses_con_datos) > 0 else 'MAR'
     
     mes_nombre = {
         'MAR': 'Marzo', 'ABR': 'Abril', 'MAY': 'Mayo', 'JUN': 'Junio',
@@ -241,17 +232,14 @@ def generar_reporte_html(df, es_corte_15=False):
         'NOV': 'Noviembre', 'DIC': 'Diciembre'
     }.get(mes_actual, mes_actual)
     
-    # Filtrar por mes actual
     df_mes = df[df['MES'] == mes_actual] if mes_actual in df['MES'].values else df
     
-    # KPIs
     total_meta = df_mes['META'].sum()
     total_real = df_mes['REAL'].sum()
     cumplimiento = (total_real/total_meta*100) if total_meta > 0 else 0
     pendientes_df = df_mes[df_mes['ESTADO'] == 'PENDIENTE']
     total_pendientes = len(pendientes_df)
     
-    # Tabla de asesores pendientes
     tabla_alertas = ""
     if not pendientes_df.empty:
         asesores_pend = pendientes_df.groupby('ASESOR').agg({
@@ -261,7 +249,7 @@ def generar_reporte_html(df, es_corte_15=False):
         
         tabla_alertas = """
         <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
-            <h3 style="color: #856404; margin-top: 0;">⚠️ Alerta: Asesores con Visitas Pendientes</h3>
+            <h3 style="color: #856404; margin-top: 0;">⚠️ Asesores con Visitas Pendientes</h3>
             <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                 <tr style="background: #856404; color: white;">
                     <th style="padding: 10px; text-align: left;">Asesor</th>
@@ -280,9 +268,8 @@ def generar_reporte_html(df, es_corte_15=False):
             """
         tabla_alertas += "</table></div>"
     
-    # Color según cumplimiento
     color_cumplimiento = '#28a745' if cumplimiento >= 80 else '#ffc107' if cumplimiento >= 50 else '#dc3545'
-    estado_texto = '✅ Cumplimiento Óptimo' if cumplimiento >= 80 else '⚠️ Cumplimiento Regular - Requiere Atención' if cumplimiento >= 50 else '❌ Cumplimiento Bajo - Acción Inmediata'
+    estado_texto = '✅ Cumplimiento Óptimo' if cumplimiento >= 80 else '⚠️ Cumplimiento Regular' if cumplimiento >= 50 else '❌ Cumplimiento Bajo'
     
     titulo = f"Reporte de Corte - 15 {mes_nombre}" if es_corte_15 else f"Reporte Final - {mes_nombre}"
     
@@ -296,17 +283,14 @@ def generar_reporte_html(df, es_corte_15=False):
     <body style="margin: 0; padding: 20px; background-color: #f5f5f5; font-family: Arial, sans-serif;">
         <div style="max-width: 800px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             
-            <!-- Header -->
             <div style="background: linear-gradient(135deg, #2E59A7 0%, #1a1a2e 100%); padding: 30px; text-align: center;">
                 <h1 style="color: #F1C40F; margin: 0; font-size: 28px;">🐝 CARMENCITA</h1>
                 <p style="color: white; margin: 10px 0 0 0; font-size: 18px; font-weight: bold;">{titulo}</p>
                 <p style="color: #bdc3c7; margin: 5px 0 0 0; font-size: 14px;">Sistema de Seguimiento Operativo</p>
             </div>
             
-            <!-- Contenido -->
             <div style="padding: 30px;">
                 
-                <!-- KPIs Cards -->
                 <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 30px;">
                     
                     <div style="flex: 1; min-width: 150px; background: {color_cumplimiento}15; border-left: 4px solid {color_cumplimiento}; padding: 20px; border-radius: 8px; text-align: center;">
@@ -330,14 +314,12 @@ def generar_reporte_html(df, es_corte_15=False):
                     </div>
                 </div>
                 
-                <!-- Estado General -->
                 <div style="background: {color_cumplimiento}15; border: 1px solid {color_cumplimiento}; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
                     <p style="margin: 0; font-size: 16px; font-weight: bold; color: {color_cumplimiento};">{estado_texto}</p>
                 </div>
                 
                 {tabla_alertas}
                 
-                <!-- Detalle -->
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
                     <h3 style="color: #2E59A7; margin-top: 0;">📊 Detalle del Mes</h3>
                     <table style="width: 100%; font-size: 14px;">
@@ -377,7 +359,7 @@ def generar_reporte_html(df, es_corte_15=False):
 def enviar_email_reporte(es_corte_15=False, email_user=None, email_pass=None):
     """Función principal para enviar el reporte"""
     
-    # Si no se pasan credenciales, intentar obtenerlas
+    # Obtener credenciales si no se proporcionaron
     if email_user is None or email_pass is None:
         email_user, email_pass = get_credentials()
     
@@ -391,25 +373,20 @@ def enviar_email_reporte(es_corte_15=False, email_user=None, email_pass=None):
     
     print(f"✅ Datos cargados: {len(df)} registros")
     
-    # Generar reporte
     print("📝 Generando reporte HTML...")
     html_content, df_mes = generar_reporte_html(df, es_corte_15)
     
-    # Calcular métricas para el asunto
     total_meta = df_mes['META'].sum()
     total_real = df_mes['REAL'].sum()
     cumplimiento = (total_real/total_meta*100) if total_meta > 0 else 0
     
-    # Crear mensaje
     msg = MIMEMultipart('related')
     msg['From'] = email_user
     msg['To'] = EMAIL_DESTINO
     msg['Subject'] = f"🐝 Reporte {'Corte 15' if es_corte_15 else 'Final'} - Carmencita | Cumplimiento: {cumplimiento:.1f}%"
     
-    # Adjuntar HTML
     msg.attach(MIMEText(html_content, 'html'))
     
-    # Crear y adjuntar gráfico
     print("📊 Generando gráfico...")
     fig = crear_grafico_resumen(df)
     if fig:
@@ -419,7 +396,6 @@ def enviar_email_reporte(es_corte_15=False, email_user=None, email_pass=None):
         image.add_header('Content-Disposition', 'inline', filename='grafico.png')
         msg.attach(image)
     
-    # Enviar
     print("📧 Conectando a Gmail...")
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
