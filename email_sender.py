@@ -5,10 +5,7 @@ import re
 import unicodedata
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from email.mime.image import MIMEImage
 from datetime import datetime
-import plotly.graph_objects as go
-import plotly.io as pio
 
 # CONFIGURACIÓN
 EMAIL_DESTINO = "ruizalonso804@gmail.com"
@@ -23,29 +20,29 @@ def get_credentials():
     try:
         import streamlit as st
         
-        # Debug: mostrar qué secrets están disponibles
-        print(f"Secrets disponibles: {list(st.secrets.keys())}")
-        
         # Buscar EMAIL_USER
         if "EMAIL_USER" in st.secrets:
             email_user = st.secrets["EMAIL_USER"]
             print("✅ EMAIL_USER encontrado en raíz")
+        else:
+            # Buscar en sub-secciones
+            for key in st.secrets.keys():
+                if isinstance(st.secrets[key], dict) and "EMAIL_USER" in st.secrets[key]:
+                    email_user = st.secrets[key]["EMAIL_USER"]
+                    print(f"✅ EMAIL_USER encontrado en [{key}]")
+                    break
         
         # Buscar EMAIL_PASS
         if "EMAIL_PASS" in st.secrets:
             email_pass = st.secrets["EMAIL_PASS"]
             print("✅ EMAIL_PASS encontrado en raíz")
-        
-        # Si no están en raíz, buscar en sub-secciones
-        if not email_user or not email_pass:
+        else:
+            # Buscar en sub-secciones
             for key in st.secrets.keys():
-                if isinstance(st.secrets[key], dict):
-                    if not email_user and "EMAIL_USER" in st.secrets[key]:
-                        email_user = st.secrets[key]["EMAIL_USER"]
-                        print(f"✅ EMAIL_USER encontrado en [{key}]")
-                    if not email_pass and "EMAIL_PASS" in st.secrets[key]:
-                        email_pass = st.secrets[key]["EMAIL_PASS"]
-                        print(f"✅ EMAIL_PASS encontrado en [{key}]")
+                if isinstance(st.secrets[key], dict) and "EMAIL_PASS" in st.secrets[key]:
+                    email_pass = st.secrets[key]["EMAIL_PASS"]
+                    print(f"✅ EMAIL_PASS encontrado en [{key}]")
+                    break
         
         if email_user and email_pass:
             return email_user, email_pass
@@ -181,44 +178,6 @@ def load_data_from_sheets():
         print(f"Error cargando datos: {e}")
         return pd.DataFrame()
 
-def crear_grafico_resumen(df):
-    """Crea gráfico de barras para el email"""
-    if df.empty:
-        return None
-    
-    resumen = df.groupby('MES').agg({
-        'META': 'sum',
-        'REAL': 'sum'
-    }).reindex(MESES).fillna(0)
-    
-    fig = go.Figure()
-    
-    fig.add_trace(go.Bar(
-        x=resumen.index,
-        y=resumen['META'],
-        name='Meta Planificada',
-        marker_color='#2E59A7'
-    ))
-    
-    fig.add_trace(go.Bar(
-        x=resumen.index,
-        y=resumen['REAL'],
-        name='Real Ejecutado',
-        marker_color='#F1C40F'
-    ))
-    
-    fig.update_layout(
-        title='Resumen de Visitas 2026',
-        barmode='group',
-        template='plotly_white',
-        height=400,
-        width=700,
-        yaxis_title='N° de Visitas',
-        xaxis_title='Mes'
-    )
-    
-    return fig
-
 def generar_reporte_html(df, es_corte_15=False):
     """Genera el HTML del reporte"""
     
@@ -240,6 +199,29 @@ def generar_reporte_html(df, es_corte_15=False):
     pendientes_df = df_mes[df_mes['ESTADO'] == 'PENDIENTE']
     total_pendientes = len(pendientes_df)
     
+    # Crear tabla de resumen mensual
+    resumen_mensual = df.groupby('MES').agg({
+        'META': 'sum',
+        'REAL': 'sum'
+    }).reindex(MESES).fillna(0)
+    
+    tabla_meses = ""
+    for mes in MESES:
+        if mes in resumen_mensual.index and (resumen_mensual.loc[mes, 'META'] > 0 or resumen_mensual.loc[mes, 'REAL'] > 0):
+            meta_mes = int(resumen_mensual.loc[mes, 'META'])
+            real_mes = int(resumen_mensual.loc[mes, 'REAL'])
+            cumpl_mes = (real_mes/meta_mes*100) if meta_mes > 0 else 0
+            color_mes = '#28a745' if cumpl_mes >= 80 else '#ffc107' if cumpl_mes >= 50 else '#dc3545'
+            tabla_meses += f"""
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>{mes}</strong></td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">{meta_mes}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; color: {color_mes}; font-weight: bold;">{real_mes}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; color: {color_mes};">{cumpl_mes:.1f}%</td>
+                </tr>
+            """
+    
+    # Tabla de asesores pendientes
     tabla_alertas = ""
     if not pendientes_df.empty:
         asesores_pend = pendientes_df.groupby('ASESOR').agg({
@@ -249,7 +231,7 @@ def generar_reporte_html(df, es_corte_15=False):
         
         tabla_alertas = """
         <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
-            <h3 style="color: #856404; margin-top: 0;">⚠️ Asesores con Visitas Pendientes</h3>
+            <h3 style="color: #856404; margin-top: 0;">⚠️ Alerta: Asesores con Visitas Pendientes</h3>
             <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                 <tr style="background: #856404; color: white;">
                     <th style="padding: 10px; text-align: left;">Asesor</th>
@@ -291,6 +273,7 @@ def generar_reporte_html(df, es_corte_15=False):
             
             <div style="padding: 30px;">
                 
+                <!-- KPIs Cards -->
                 <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 30px;">
                     
                     <div style="flex: 1; min-width: 150px; background: {color_cumplimiento}15; border-left: 4px solid {color_cumplimiento}; padding: 20px; border-radius: 8px; text-align: center;">
@@ -320,8 +303,23 @@ def generar_reporte_html(df, es_corte_15=False):
                 
                 {tabla_alertas}
                 
+                <!-- Tabla de resumen mensual -->
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
-                    <h3 style="color: #2E59A7; margin-top: 0;">📊 Detalle del Mes</h3>
+                    <h3 style="color: #2E59A7; margin-top: 0;">📅 Resumen Mensual</h3>
+                    <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+                        <tr style="background: #2E59A7; color: white;">
+                            <th style="padding: 10px; text-align: left;">Mes</th>
+                            <th style="padding: 10px; text-align: center;">Meta</th>
+                            <th style="padding: 10px; text-align: center;">Real</th>
+                            <th style="padding: 10px; text-align: center;">%</th>
+                        </tr>
+                        {tabla_meses}
+                    </table>
+                </div>
+                
+                <!-- Detalle del mes actual -->
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                    <h3 style="color: #2E59A7; margin-top: 0;">📊 Detalle {mes_nombre}</h3>
                     <table style="width: 100%; font-size: 14px;">
                         <tr>
                             <td style="padding: 8px 0;"><strong>Meta Planificada:</strong></td>
@@ -380,21 +378,12 @@ def enviar_email_reporte(es_corte_15=False, email_user=None, email_pass=None):
     total_real = df_mes['REAL'].sum()
     cumplimiento = (total_real/total_meta*100) if total_meta > 0 else 0
     
-    msg = MIMEMultipart('related')
+    msg = MIMEMultipart('alternative')
     msg['From'] = email_user
     msg['To'] = EMAIL_DESTINO
     msg['Subject'] = f"🐝 Reporte {'Corte 15' if es_corte_15 else 'Final'} - Carmencita | Cumplimiento: {cumplimiento:.1f}%"
     
     msg.attach(MIMEText(html_content, 'html'))
-    
-    print("📊 Generando gráfico...")
-    fig = crear_grafico_resumen(df)
-    if fig:
-        img_bytes = pio.to_image(fig, format='png', scale=2)
-        image = MIMEImage(img_bytes)
-        image.add_header('Content-ID', '<grafico>')
-        image.add_header('Content-Disposition', 'inline', filename='grafico.png')
-        msg.attach(image)
     
     print("📧 Conectando a Gmail...")
     server = smtplib.SMTP('smtp.gmail.com', 587)
