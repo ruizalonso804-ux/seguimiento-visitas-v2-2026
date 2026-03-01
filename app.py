@@ -712,11 +712,7 @@ def main():
             with st.expander("Cómo configurar"):
                 st.info("Agrega EMAIL_USER y EMAIL_PASS en los secrets de Streamlit Cloud")
         
-        # Información adicional
-        with st.expander("ℹ️ Info", expanded=False):
-            st.caption("Los reportes se envían a:")
-            st.code("ruizalonso804@gmail.com")
-            st.caption("Automático: días 15 y 30")
+        
 
     # Filtros
     df_f = df.copy()
