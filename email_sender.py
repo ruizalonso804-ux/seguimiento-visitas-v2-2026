@@ -22,13 +22,35 @@ def get_credentials():
     # Intentar obtener desde Streamlit secrets (cuando se ejecuta desde la app)
     try:
         import streamlit as st
+        
+        # Buscar EMAIL_USER en cualquier parte de los secrets
         if "EMAIL_USER" in st.secrets:
             email_user = st.secrets["EMAIL_USER"]
+            print("✅ EMAIL_USER encontrado en secrets raíz")
+        else:
+            # Buscar en sub-secciones
+            for key in st.secrets.keys():
+                if isinstance(st.secrets[key], dict) and "EMAIL_USER" in st.secrets[key]:
+                    email_user = st.secrets[key]["EMAIL_USER"]
+                    print(f"✅ EMAIL_USER encontrado en sección {key}")
+                    break
+        
+        # Buscar EMAIL_PASS en cualquier parte de los secrets
         if "EMAIL_PASS" in st.secrets:
             email_pass = st.secrets["EMAIL_PASS"]
+            print("✅ EMAIL_PASS encontrado en secrets raíz")
+        else:
+            # Buscar en sub-secciones
+            for key in st.secrets.keys():
+                if isinstance(st.secrets[key], dict) and "EMAIL_PASS" in st.secrets[key]:
+                    email_pass = st.secrets[key]["EMAIL_PASS"]
+                    print(f"✅ EMAIL_PASS encontrado en sección {key}")
+                    break
+        
         if email_user and email_pass:
             print("✅ Credenciales obtenidas desde Streamlit secrets")
             return email_user, email_pass
+            
     except Exception as e:
         print(f"ℹ️ No se pudieron obtener credenciales de Streamlit: {e}")
     
@@ -43,8 +65,7 @@ def get_credentials():
     # Si llegamos aquí, no se encontraron credenciales
     raise ValueError(
         "No se encontraron credenciales de email. "
-        "Configura EMAIL_USER y EMAIL_PASS en Streamlit secrets (para botón manual) "
-        "o en GitHub secrets (para automatización)."
+        "Configura EMAIL_USER y EMAIL_PASS en Streamlit secrets o variables de entorno."
     )
 
 def normalize_text(text):
@@ -359,6 +380,8 @@ def enviar_email_reporte(es_corte_15=False, email_user=None, email_pass=None):
     # Si no se pasan credenciales, intentar obtenerlas
     if email_user is None or email_pass is None:
         email_user, email_pass = get_credentials()
+    
+    print(f"📧 Usando cuenta: {email_user}")
     
     print("📥 Cargando datos...")
     df = load_data_from_sheets()
